@@ -1,0 +1,62 @@
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+<div class="contents">
+	<table class="subjects" border=1>
+		<tr>
+			<th class="">
+				<a href="./?log=10&amp;sort=num" title="No.で昇順でソートします">No.</a>
+			</th>
+			<th class="">
+				<a href="./?log=10&amp;sort=title" title="作品名で昇順でソートします">作品名</a>
+			</th>
+			<th class="">
+				<a href="./?log=10&amp;sort=author" title="作者で昇順でソートします">作者</a>
+			</th>
+			<th class="">
+				<a href="./?log=10&amp;sort=eval" title="評価で昇順でソートします">評価</a>
+			</th>
+			<th class="">
+				<a href="./?log=10&amp;sort=point" title="POINTで昇順でソートします">POINT</a>
+			</th>
+			<th class="">
+				<a href="./?log=10&amp;sort=rate" title="Rateで昇順でソートします">Rate</a>
+			</th>
+			<th class="">
+				<a href="./?log=10&amp;sort=size" title="容量で昇順でソートします">容量</a>
+			</th>
+			<th></th>
+		</tr>
+
+% for c in clists:
+		<tr>
+			<th class="">
+				{{c["id"]}}
+			</th>
+			<th class="">
+				<a href={{c["url"]}}>{{c["title"]}}</a>
+			</th>
+			<th class="">
+				{{c["author"]}}
+			</th>
+			<th class="">
+				{{c["hyoka"]}}
+			</th>
+			<th class="">
+				{{c["point"]}}
+			</th>
+			<th class="">
+				{{c["rate"]}}
+			</th>
+			<th class="">
+				{{c["size"]}}
+			</th>
+			<th></th>
+		</tr>
+%end
+	</table>
+</div>
+
+</body>
