@@ -4,13 +4,17 @@ import sys
 import lxml.html
 import sqlite3
 import os.path
+import pickle
+
 from bottle import template
 from bottle import route, run
+from fractions import Fraction
 
 
 URL = "http://thewaterducts.sakura.ne.jp"
 PHPU = "/php/waterducts/imta"
-DATABASE = "data.db"
+DATABASE = os.path.join(os.path.curdir, "data.pickle")
+gData = None
 
 def getlist(num):
     r=requests.get(URL+"/php/waterducts/imta/?log=%d"%(num))
@@ -25,7 +29,14 @@ def getlist(num):
                    point    = b.xpath("../td")[6].text.strip(),\
                    rate     = b.xpath("../td")[7].text.strip(),\
                    size     = b.xpath("../td")[8].text.strip(),\
-                   ) for b in a]
+                   ) 
+                   for b in a]
+    sclist = [[b, dict(hyoka = float(Fraction_zero(b["hyoka"])),
+                       point = int(b["point"]),
+                       rate  = float(b["rate"]),
+                       size = float(b["size"].rstrip("KB "))
+                       )
+             ] for b in sclist]
 
     return sclist
 
@@ -42,10 +53,33 @@ def getclists():
     return clist
 
 
+
 @route('/')
 @route('/index')
 def base():
-    clists = getclists()
-    return template('templates/cate.html', clists = clists)
+    return template('templates/cate.html', clists = gData)
 
-run(host='localhost', port=8080,debug=True, reloader=True)
+def sort_hyoka():
+    cli = sorted(gData, key=lambda x: x[1]["hyoka"])
+    return template('templates/cate.html', clists = gData)
+
+def Fraction_zero(n):
+    try:
+        ans = Fraction(n)
+    except ZeroDivisionError:
+        return 0.0
+    return float(ans)
+
+
+if __name__ == '__main__':
+    if(not os.path.isfile(DATABASE)):
+        print("save data")
+        gData = getclists()
+        with open(DATABASE, 'wb') as f:
+            pickle.dump(gData,f)
+    else:
+        print("read data")
+        with open(DATABASE, 'rb') as f:
+            gData = pickle.load(f)
+
+    run(host='0.0.0.0', port=80,debug=False, reloader=True)
