@@ -1,9 +1,12 @@
 # -*- coding: utf_8 -*-
 from urllib import request
+import fractions
+from functools import cmp_to_key
 import sys
 import lxml.html
 import os.path
 import pickle
+
 
 from bottle import template
 from bottle import route, run
@@ -14,6 +17,7 @@ URL = "http://thewaterducts.sakura.ne.jp"
 PHPU = "/php/waterducts/imta"
 DATABASE = os.path.join(os.path.curdir, "data.pickle")
 gData = None
+
 
 def getlist(num):
     r=request.urlopen(URL+"/php/waterducts/imta/?log=%d"%(num))
@@ -39,6 +43,7 @@ def getlist(num):
 
     return sclist
 
+
 def getclists():
     tpc = request.urlopen(URL + "/php/waterducts/imta")
     ro = lxml.html.fromstring(tpc.read().decode("cp932"))
@@ -52,23 +57,37 @@ def getclists():
     return clist
 
 
-
 @route('/')
 @route('/index')
 def base():
     return template('templates/cate.html', clists = gData)
 
+
 @route('/sort_hyoka')
 def sort_hyoka():
-    cli = sorted(gData, key=lambda x: x[1]["hyoka"], reverse=True)
-    return template('templates/cate.html', clists = cli)
+    cli2 = sorted(gData, key=cmp_to_key(cmp2), reverse=True)
+    return template('templates/cate.html', clists = cli2)
+
+def denom_from_str(stri):
+    return int(stri.rsplit("/",1)[-1])
 
 def Fraction_zero(n):
     try:
         ans = Fraction(n)
     except ZeroDivisionError:
-        return 0.0
-    return float(ans)
+        return Fraction(0,1)
+    return ans
+
+def cmp1(a,b):
+    return a-b
+
+def cmp2(a,b):
+    p1=cmp1(a[1]["hyoka"],b[1]["hyoka"])
+    if p1:
+        return p1
+    else:
+        return cmp1(denom_from_str(a[0]["hyoka"]),
+               denom_from_str(b[0]["hyoka"]))
 
 
 if __name__ == '__main__':
@@ -82,4 +101,4 @@ if __name__ == '__main__':
         with open(DATABASE, 'rb') as f:
             gData = pickle.load(f)
 
-    run(host='0.0.0.0', port=80,debug=False, reloader=True)
+    run(host='0.0.0.0', port=80, debug=False, reloader=True)
